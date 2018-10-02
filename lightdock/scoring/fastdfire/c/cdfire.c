@@ -38,21 +38,24 @@ int compare(const void *a, const void *b) {
 void euclidean_dist(PyArrayObject *receptor_coordinates, PyArrayObject *ligand_coordinates,
                     unsigned int **indexes, unsigned int *indexes_len) {
     unsigned int rec_len, lig_len, i, j, n;
-    double dist, **rec_array, **lig_array;
+    double dist, *rec_array, *lig_array;
 
     *indexes_len = 0;
     n = 0;
 
-    rec_array = (double **)PyArray_DATA(PyArray_GETCONTIGUOUS(receptor_coordinates));
-    lig_array = (double **)PyArray_DATA(PyArray_GETCONTIGUOUS(ligand_coordinates));
+    rec_len = PyArray_SHAPE(receptor_coordinates)[0];
+    lig_len = PyArray_SHAPE(ligand_coordinates)[0];
+
+    rec_array = (double *)PyArray_DATA(receptor_coordinates);
+    lig_array = (double *)PyArray_DATA(ligand_coordinates);
 
     *indexes = malloc(3*rec_len*lig_len*sizeof(unsigned int));
 
     for (i = 0; i < rec_len; i++) {
         for (j = 0; j < lig_len; j++) {
-            dist = pow((rec_array[i][0] - lig_array[j][0]), 2.0) +
-                   pow((rec_array[i][1] - lig_array[j][1]), 2.0) +
-                   pow((rec_array[i][2] - lig_array[j][2]), 2.0);
+            dist = pow((rec_array[i*3 + 0] - lig_array[j*3 + 0]), 2.0) +
+                   pow((rec_array[i*3 + 1] - lig_array[j*3 + 1]), 2.0) +
+                   pow((rec_array[i*3 + 2] - lig_array[j*3 + 2]), 2.0);
             if (dist <= 225.) {
                 (*indexes)[n++] = i;
                 (*indexes)[n++] = j;
